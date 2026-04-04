@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Temp Converter</title>
+</head>
+<body>
+    <h1>🌡️ Temperature Converter</h1>
+    <input type="number" id="t" step="0.01" placeholder="Temperature">
+    From: <select id="f"><option value="C">°C</option><option value="F">°F</option><option value="K">K</option></select>
+    To: <select id="to"><option value="C">°C</option><option value="F">°F</option><option value="K">K</option></select>
+    <br><button onclick="convert()">Convert</button>
+    <div id="r" style="margin:20px 0;padding:10px;border:1px solid #ccc;font-size:20px;font-weight:bold;min-height:30px"></div>
+
+    <script>
+        async function convert(){
+            const t=parseFloat(document.getElementById('t').value);
+            const f=document.getElementById('f').value;
+            const to=document.getElementById('to').value;
+            const btn=document.querySelector('button');
+            const r=document.getElementById('r');
+            
+            if(isNaN(t)){r.innerHTML='Enter valid number!';r.style.background='#ffebee';return}
+            
+            btn.disabled=true;btn.innerHTML='...';
+            r.innerHTML='';
+            
+            try{
+                const res=await fetch('',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value},
+                    body:`temperature=${t}&from_unit=${f}&to_unit=${to}`
+                });
+                const d=await res.json();
+                r.innerHTML=d.success?`${d.converted_temp} ${d.to_unit}`:d.error||'Error';
+                r.style.background=d.success?'#d4edda':'#ffebee';
+            }catch{r.innerHTML='Network error';r.style.background='#ffebee'}
+            
+            btn.disabled=false;btn.innerHTML='Convert';
+        }
+    </script>
+    {% csrf_token %}
+</body>
+</html>
